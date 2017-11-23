@@ -1,0 +1,54 @@
+Tom,Lucy
+Tom,Jack
+Jone,Lucy
+Jone,Jack
+Lucy,Mary
+Lucy,Ben
+Jack,Alice
+Jack,Jesse
+Terry,Alice
+Terry,Jesse
+Philip,Terry
+Philip,Alma
+Mark,Terry
+Mark,Alma
+
+
+
+T1
+child  parent
+ Tom     lucy
+ lucy    marry
+ 
+
+  a                      b
+  tom—> a.tom,a.lucy    lucy=b.tom,b.lucy
+  lucy->a.lucy,a.marry  marry=b.lucy,b.marry
+
+
+tom,lucy
+
+a                    b
+  
+tom—> a,tom,lucy     lucy->b.tom,lucy
+lucy->a,lucy,mary    mary->b,lucy,mary
+
+—-reduce
+  key   value
+lucy     {b,tom,lucy  a,lucy,mary}
+
+
+for(Text itterable:)
+{
+     
+}
+
+
+
+
+
+
+
+
+
+
