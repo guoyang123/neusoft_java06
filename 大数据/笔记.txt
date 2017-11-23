@@ -1,0 +1,332 @@
+知识点：
+   1：本节课目标
+     内容：HDFS，Mapreduce ，Hive，协同过滤算法
+
+   2：大数据
+     z1）概念--百度
+        大数据与hadoop的关系：hadoop是大数据的解决方案，使用廉洁的机器，免费使用
+
+第一章：大数据分布式系统
+    分布式特点： 容错性、
+                高可用性、
+                可恢复性（能够自动恢复并重新加入系统）、
+                一致性（各个组件/节点在并发和失败时能保证数据一致性）、
+                可扩展性 
+
+    z2）数据分布方式：1：哈希值2：范围 3：按数据量分布
+
+    z3）数据一致性： 1：中心化副本控制协议
+           --primary-secondary协议 
+
+       cap原理（cap theorem）
+          一致性（Consistency），可用性（Availability），分区容忍性（Partition tolerance）
+       base理论 基本可用（Basically Available），软状态（soft state），最终一致性（Eventual Consistency）
+       ACID
+
+       （缓存一致性 强一致性 事务性）scb2形式回滚-添加数据-所有轨迹都在记录中
+
+      （自然键）
+
+     大数据计算模式：
+      批处理 MapReduce
+      交互式处理 Shark,Hive 
+      流式计算 S4,Storm
+      迭代计算Twister ,Spark 
+      图片计算 Pregel,Giraph 
+      内存计算 Dremel,Redis
+       
+   大数据技术的应用：
+    数据挖掘：分析--挖掘
+    统计学 可视化  高性能计算  人工智能 机器学习  数据技术
+    etr
+    相关性 因果性  经验值
+
+     数据挖掘概念-KDD过程--韩佳玮
+
+   作业：--blog 
+     1：大数据概念、与hadoop关系
+     2：分布式系统数据分配方式
+     3：一致性协议CAP 、Base，primary-Secondary，Paxos
+     4：计算模式
+     5：数据分析过程
+
+            
+hdfs：
+
+
+cp
+tar
+mv
+profile
+
+集群安装的重难点
+问题：
+ 1：安装  上网问题 4-实验
+ 2：ssh 
+    公钥密钥对 ---服务--- 
+ 3：配置文件  core  hdfs.xml 
+
+
+HDFS：
+  流程：
+      数据块（小文件问题），
+  难点：  
+    
+ 
+配置环境变量：
+
+sudo gedit /etc/profile---打开文件
+source /etc/profile--重新启动
+
+pwd :显示路径
+
+
+
+
+window-eclipse 配置
+1：eclipse-win
+2:插件 hadoop-plugin
+3：win安装hadoop  hadoop2.6_win_x64-master.zip
+4：hadoop\bin替换
+5：把hadoop\bin hadoop.dll-cp->windows/system32下
+
+
+作业：
+ 1：hdfs读写策略
+2： secondaryNameNode作用
+3：会使用javaAPI开发基本文件管理 create  delete
+
+
+Mapreduce
+1：map
+split分片-map-partition分区->combiner(本机归总)
+-->sort(自然排序) file
+2：reduce
+-->sort Group key-{values} merge（合并）
+作业：
+  1：Mapreduce工作流程
+
+
+
+安装ssh
+1:sudo apt-get install ssh
+2: ssh-keygen -t rsa -P ''
+3:cat .ssh/id_rsa.pub > .ssh/authorized_keys
+
+
+配置hadoop配置伪分布实例
+hadoop-2.6.0/etc/hadoop/hadoop-env.sh
+hadoop-2.6.0/etc/hadoop/yarn-env.sh
+hadoop-2.6.0/etc/hadoop/core-site.xml
+hadoop-2.6.0/etc/hadoop/hdfs-site.xml
+hadoop-2.6.0/etc/hadoop/mapred-site.xml
+hadoop-2.6.0/etc/hadoop/yarn-site.xml
+hadoop-2.6.0/etc/hadoop/slaves
+
+命令：
+1：hdfs  namenode -format
+2：start-dfs.sh
+3：start-yarn.sh
+4:jps
+5:stop-dfs.sh
+6:start-all.sh
+7:hadoop fs -ls /
+8:hadoop fs -mkdir /input
+
+
+
+案例：
+class WordCount{
+  static class MyMapper extends Mapper<LongWritable,Text,Text,IntWritable>{
+         protected void map(LongWritable key,Text value,Context context){
+               String[] words=value.toString().split(",");
+                for(int i=0;i<words.length;i++){
+                     context.write(words[i],new IntWritable(1));
+                 }
+       }
+    }
+
+  static class MyReducer extends Reduce<Text,Text,Text,IntWritable>{
+         protected void reduce(Text key,Iterable<IntWritable> value,Context context){
+               Iterable it=values.iterator();
+                 int sum=0;
+                while(it.next()){
+                     sum+= it.get();
+                 }
+       }
+    }
+
+   main(String[] args){
+      Configuration conf=new Configuration();
+      Job job=new Job(conf);
+       
+      ……
+      job.addInputPaths();
+      job.waitFor 
+   }
+}
+
+注意：
+1：重写map reduce 
+2：类型
+=======================================
+第三天
+复习
+重点 难点
+1：安装linux
+2：hdfs ->工作流程 
+3:mapreduce->架构 系统 工作流程
+
+class API --HDFS文件操作
+FileSystem，FSDataInputStream 字节，LineReader BufferReader字符
+
+
+
+//删除文件
+output1
+FileSystem fs=FileSystem.open();
+fs.delete(path);
+
+FileSystem fs=Output.getFileSystem(conf);
+fs.delete(Output);
+
+
+mr
+Job Mapper Reducer 
+MR工作流程
+
+一个节点，一个机器
+分片: InputFormat-> inputSplit RecordReader->k/v
+     Map  map函数  逻辑处理-context.write()
+分区 partition-->reduce Task 2
+      key.getHasCode()%reduceNum-->分区索引号0 1
+排序 由于内存中的factor ，排序
+
+合并 combiner （本机合并，提高带宽） spill(移除写入文件)
+
+    0--》sort--》10个文件-》1个大文件
+    1--》sort
+
+    --》ApplicationManager--Task
+        ResourceManager--Resource资源--yarn
+
+
+
+shuffle -map（排序，合并），reduce
+3个阶段
+reducer 任务task--》ApplicationManager
+reduce--》5个线程-》
+key-sort-》merge 按照key分组group===》输出
+
+
+---------------------》
+分区数不能大于task数
+
+
+
+----------------------------------------
+相关性--分析
+（主特征）
+
+ 
+
+-----------------------------------------------------
+1：TeraSort 排序作业  
+2：private Logger log=logger.getLogger(Map.class);
+  log.info(数据);
+
+3：变量定义时：最好放在方法体外面。使用set赋值。
+
+
+
+------------------------
+mapreduce-join sort
+二次排序sort 
+
+join-reduce repartition（多分区） map replicatas（多复制） sim（旁路连接）
+
+1：hive
+2：hbase
+安装成功 使用
+
+
+
+1：setInputFormat
+2：setPartition
+3：setCombiner-sort merge->spill-大文件
+
+4:copy
+   group--reduce---输出FSDataOutputStream-》
+
+
+zookeeper-3.6.5
+hbase-1.0
+
+1:解压
+
+3：配置
+  
+3：profile
+4：启动
+
+分布式 paxos，primary-Secondary
+
+
+
+1：hostname
+sudo gedit /etc/hostname;
+salve1
+
+2：改ip
+  sudo gedit /etc/network/interfaces
+
+3:hosts---三台相同
+sudo gedit /etc/hosts;
+
+4:ssh
+启动顺序
+start-all.sh 在主机上
+zkServer.sh start 在每一台机子
+start-hbase.sh 在主机上
+
+-jps
+  HMaster、HRegionServer 、HQuorumPeer
+
+hbase成功：
+
+hbase shell 进入hbase
+
+paxos算法
+Avro
+
+
+
+-----------------------------
+明天  项目
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
